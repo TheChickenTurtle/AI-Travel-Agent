@@ -1,4 +1,7 @@
-x = 1
-y = 2
+from flask import Flask
 
-print(x + y)
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    return
