@@ -1,0 +1,465 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - TravelMind AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+{% endblock %}
+
+{% block body %}
+<!-- Navigation -->
+<nav class="navbar navbar-app">
+    <div class="nav-container">
+        <div class="nav-content">
+            <a href="{{ url_for('dashboard') }}" class="nav-brand">
+                <div class="nav-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+                <span class="nav-brand-text">TravelMind AI</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9,22 9,12 15,12 15,22"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('chat') }}" class="nav-link nav-link-active">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>Plan Trip</span>
+                </a>
+            </div>
+
+            <div class="nav-user">
+                <div class="user-menu">
+                    <button class="user-button" onclick="toggleUserMenu()">
+                        <div class="user-avatar">
+                            {{ current_user.first_name[0] if current_user.first_name else 'U' }}
+                        </div>
+                        <span class="user-name">{{ current_user.first_name }}</span>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="{{ url_for('profile') }}" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <span>Profile</span>
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16,17 21,12 16,7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span>Sign out</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="chat-container">
+    <div class="chat-layout">
+        <!-- Chat Area -->
+        <div class="chat-main">
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-info">
+                    <div class="ai-avatar">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 8V4H8"/>
+                            <rect width="16" height="12" x="4" y="8" rx="2"/>
+                            <path d="m14 8-2 2-2-2"/>
+                            <path d="M18 8v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8"/>
+                        </svg>
+                    </div>
+                    <div class="chat-details">
+                        <h2 class="chat-title">TravelMind AI</h2>
+                        <p class="chat-subtitle">Your personal travel assistant</p>
+                    </div>
+                </div>
+                
+                <div class="chat-status">
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span class="status-text">Online</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <!-- Welcome Message -->
+                <div class="message message-ai">
+                    <div class="message-avatar">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 8V4H8"/>
+                            <rect width="16" height="12" x="4" y="8" rx="2"/>
+                            <path d="m14 8-2 2-2-2"/>
+                            <path d="M18 8v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8"/>
+                        </svg>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>Hi {{ current_user.first_name }}! 👋 I'm your AI travel assistant. I'm here to help you plan the perfect trip tailored to your preferences. Let's start by getting to know what kind of adventure you're looking for!</p>
+                            <p>To get started, you can tell me:</p>
+                            <ul>
+                                <li>• Where would you like to go?</li>
+                                <li>• What's your budget range?</li>
+                                <li>• When are you planning to travel?</li>
+                                <li>• What activities interest you most?</li>
+                            </ul>
+                        </div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                </div>
+
+                <!-- Load existing messages if any -->
+                {% for message in messages %}
+                <div class="message message-{{ message.sender }}">
+                    <div class="message-avatar">
+                        {% if message.sender == 'user' %}
+                            <div class="user-avatar-small">{{ current_user.first_name[0] }}</div>
+                        {% else %}
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 8V4H8"/>
+                                <rect width="16" height="12" x="4" y="8" rx="2"/>
+                                <path d="m14 8-2 2-2-2"/>
+                                <path d="M18 8v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8"/>
+                            </svg>
+                        {% endif %}
+                    </div>
+                    <div class="message-content">
+                        <div class="message-bubble">
+                            <p>{{ message.content }}</p>
+                        </div>
+                        <div class="message-time">{{ message.timestamp }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Quick Replies (show only if no messages) -->
+            {% if not messages %}
+            <div class="quick-replies" id="quickReplies">
+                <button class="quick-reply" onclick="sendQuickReply('🌸 I want to visit Japan')">
+                    🌸 I want to visit Japan
+                </button>
+                <button class="quick-reply" onclick="sendQuickReply('🏖️ Beach vacation under $2000')">
+                    🏖️ Beach vacation under $2000
+                </button>
+                <button class="quick-reply" onclick="sendQuickReply('🗺️ Surprise me with a destination')">
+                    🗺️ Surprise me with a destination
+                </button>
+                <button class="quick-reply" onclick="sendQuickReply('🍝 Food-focused trip to Italy')">
+                    🍝 Food-focused trip to Italy
+                </button>
+            </div>
+            {% endif %}
+
+            <!-- Input Area -->
+            <div class="chat-input">
+                <div class="input-container">
+                    <button class="attachment-button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                        </svg>
+                    </button>
+                    
+                    <div class="input-wrapper">
+                        <input
+                            type="text"
+                            id="messageInput"
+                            class="message-input"
+                            placeholder="Type your message..."
+                            onkeypress="handleKeyPress(event)"
+                        >
+                        <button class="send-button" id="sendButton" onclick="sendMessage()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"/>
+                                <polygon points="22,2 15,22 11,13 2,9 22,2"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trip Summary Sidebar -->
+        {% if trip %}
+        <div class="trip-sidebar" id="tripSidebar">
+            <div class="sidebar-content">
+                <h3 class="sidebar-title">Trip Planning</h3>
+                
+                <div class="trip-summary">
+                    <div class="trip-header">
+                        <h4 class="trip-name">{{ trip.get('title', 'Current Trip') }}</h4>
+                        <span class="trip-status status-{{ trip.get('status', 'planning') }}">
+                            {{ trip.get('status', 'Planning').title() }}
+                        </span>
+                    </div>
+                    
+                    <div class="trip-details">
+                        <div class="trip-detail">
+                            <div class="detail-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Destination</span>
+                                <p class="detail-value">{{ trip.get('destination', 'TBD') }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="trip-detail">
+                            <div class="detail-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Dates</span>
+                                <p class="detail-value">
+                                    {% if trip.get('start_date') and trip.get('end_date') %}
+                                        {{ trip.start_date }} - {{ trip.end_date }}
+                                    {% else %}
+                                        TBD
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="trip-detail">
+                            <div class="detail-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="1" x2="12" y2="23"/>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Budget</span>
+                                <p class="detail-value">${{ "{:,}".format(trip.get('total_budget', 0)) }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="trip-detail">
+                            <div class="detail-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                </svg>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Travelers</span>
+                                <p class="detail-value">{{ trip.get('travelers', 1) }} people</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if trip.get('destination') %}
+                    <a href="{{ url_for('itinerary', trip_id=trip.id) }}" class="btn btn-primary btn-full">
+                        View Full Itinerary
+                    </a>
+                    {% endif %}
+                </div>
+
+                <!-- Progress Indicator -->
+                <div class="planning-progress">
+                    <h4 class="progress-title">Planning Progress</h4>
+                    <div class="progress-items">
+                        <div class="progress-item progress-complete">
+                            <span class="progress-text">Destination & Dates</span>
+                            <span class="progress-check">✓</span>
+                        </div>
+                        <div class="progress-item progress-complete">
+                            <span class="progress-text">Budget & Preferences</span>
+                            <span class="progress-check">✓</span>
+                        </div>
+                        <div class="progress-item progress-pending">
+                            <span class="progress-text">Accommodation</span>
+                            <span class="progress-check">⏳</span>
+                        </div>
+                        <div class="progress-item">
+                            <span class="progress-text">Activities & Dining</span>
+                            <span class="progress-check">○</span>
+                        </div>
+                        <div class="progress-item">
+                            <span class="progress-text">Transportation</span>
+                            <span class="progress-check">○</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+let currentTripId = {{ trip.id | tojsonfilter if trip else 'null' }};
+let isTyping = false;
+
+function handleKeyPress(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
+}
+
+function sendQuickReply(text) {
+    document.getElementById('messageInput').value = text;
+    sendMessage();
+    document.getElementById('quickReplies').style.display = 'none';
+}
+
+async function sendMessage() {
+    const input = document.getElementById('messageInput');
+    const message = input.value.trim();
+    
+    if (!message || isTyping) return;
+    
+    // Add user message to chat
+    addMessage(message, 'user');
+    input.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    try {
+        const response = await fetch('/api/chat/message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: message,
+                trip_id: currentTripId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update trip ID if new trip was created
+            if (data.trip_id && !currentTripId) {
+                currentTripId = data.trip_id;
+                // Reload page to show trip sidebar
+                window.location.href = `/chat/${currentTripId}`;
+                return;
+            }
+            
+            // Hide typing indicator and add AI response
+            hideTypingIndicator();
+            addMessage(data.ai_response.content, 'ai');
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        hideTypingIndicator();
+        addMessage('Sorry, I encountered an error. Please try again.', 'ai');
+    }
+}
+
+function addMessage(content, sender) {
+    const messagesContainer = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message message-${sender}`;
+    
+    const avatar = sender === 'user' 
+        ? `<div class="user-avatar-small">${'{{ current_user.first_name[0] }}'}</div>`
+        : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M12 8V4H8"/>
+             <rect width="16" height="12" x="4" y="8" rx="2"/>
+             <path d="m14 8-2 2-2-2"/>
+             <path d="M18 8v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8"/>
+           </svg>`;
+    
+    messageDiv.innerHTML = `
+        <div class="message-avatar">${avatar}</div>
+        <div class="message-content">
+            <div class="message-bubble">
+                <p>${content.replace(/\n/g, '<br>')}</p>
+            </div>
+            <div class="message-time">Just now</div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function showTypingIndicator() {
+    isTyping = true;
+    const messagesContainer = document.getElementById('chatMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typingIndicator';
+    typingDiv.className = 'message message-ai';
+    typingDiv.innerHTML = `
+        <div class="message-avatar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 8V4H8"/>
+                <rect width="16" height="12" x="4" y="8" rx="2"/>
+                <path d="m14 8-2 2-2-2"/>
+                <path d="M18 8v4a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8"/>
+            </svg>
+        </div>
+        <div class="message-content">
+            <div class="message-bubble">
+                <div class="typing-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(typingDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    isTyping = false;
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+function toggleUserMenu() {
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const userMenu = document.querySelector('.user-menu');
+    const dropdown = document.getElementById('userDropdown');
+    
+    if (userMenu && !userMenu.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// Auto-focus input on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('messageInput').focus();
+});
+</script>
+{% endblock %}

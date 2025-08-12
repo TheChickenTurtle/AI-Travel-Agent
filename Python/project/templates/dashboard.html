@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - TravelMind AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block body %}
+<!-- Navigation -->
+<nav class="navbar navbar-app">
+    <div class="nav-container">
+        <div class="nav-content">
+            <a href="{{ url_for('dashboard') }}" class="nav-brand">
+                <div class="nav-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+                <span class="nav-brand-text">TravelMind AI</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="nav-link nav-link-active">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9,22 9,12 15,12 15,22"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('chat') }}" class="nav-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>Plan Trip</span>
+                </a>
+            </div>
+
+            <div class="nav-user">
+                <div class="user-menu">
+                    <button class="user-button" onclick="toggleUserMenu()">
+                        <div class="user-avatar">
+                            {{ current_user.first_name[0] if current_user.first_name else 'U' }}
+                        </div>
+                        <span class="user-name">{{ current_user.first_name }}</span>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="{{ url_for('profile') }}" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <span>Profile</span>
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16,17 21,12 16,7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span>Sign out</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="dashboard-container">
+    <!-- Welcome Header -->
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Welcome back, {{ current_user.first_name }}! ✈️</h1>
+        <p class="dashboard-subtitle">Ready to plan your next amazing adventure?</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-info">
+                    <p class="stat-label">Total Trips</p>
+                    <p class="stat-value">{{ stats.total_trips }}</p>
+                </div>
+                <div class="stat-icon stat-icon-primary">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-info">
+                    <p class="stat-label">Upcoming</p>
+                    <p class="stat-value">{{ stats.upcoming_trips }}</p>
+                </div>
+                <div class="stat-icon stat-icon-green">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-info">
+                    <p class="stat-label">Total Spent</p>
+                    <p class="stat-value">${{ "{:,}".format(stats.total_spent) }}</p>
+                </div>
+                <div class="stat-icon stat-icon-yellow">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-info">
+                    <p class="stat-label">Favorite Destination</p>
+                    <p class="stat-value-text">{{ stats.favorite_destination }}</p>
+                </div>
+                <div class="stat-icon stat-icon-pink">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Start New Trip CTA -->
+            <div class="cta-card">
+                <div class="cta-content">
+                    <div class="cta-text">
+                        <h2 class="cta-title">Plan Your Next Adventure</h2>
+                        <p class="cta-description">
+                            Let our AI create the perfect itinerary tailored to your preferences
+                        </p>
+                        <a href="{{ url_for('chat') }}" class="btn btn-white">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            <span>Start New Trip</span>
+                        </a>
+                    </div>
+                    <div class="cta-icon">
+                        <svg width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21 4 19 4s-2 2-3.5 3.5L11 16l-8.2 1.8c-.5.1-.9.9-.4 1.4l.4.4c.5.5 1.3.1 1.4-.4L6 17l5-5 3 3-5 5 1.8 1.8c.5.1 1.3-.3 1.4-.8z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Trips -->
+            <div class="trips-section">
+                <div class="section-header">
+                    <h3 class="section-title">Your Trips</h3>
+                    <p class="section-subtitle">Manage and track your travel plans</p>
+                </div>
+                
+                {% if trips %}
+                    <div class="trips-list">
+                        {% for trip in trips %}
+                        <div class="trip-card">
+                            <div class="trip-image">
+                                <img src="https://images.pexels.com/photos/248195/pexels-photo-248195.jpeg?auto=compress&cs=tinysrgb&w=400" alt="{{ trip.get('destination', 'Trip') }}">
+                            </div>
+                            <div class="trip-content">
+                                <div class="trip-header">
+                                    <div class="trip-info">
+                                        <h4 class="trip-title">{{ trip.get('title', 'New Trip') }}</h4>
+                                        <p class="trip-destination">{{ trip.get('destination', 'Destination TBD') }}</p>
+                                        <div class="trip-details">
+                                            <span class="trip-detail">
+                                                {% if trip.get('start_date') and trip.get('end_date') %}
+                                                    {{ trip.start_date }} - {{ trip.end_date }}
+                                                {% else %}
+                                                    Dates TBD
+                                                {% endif %}
+                                            </span>
+                                            <span class="trip-detail">{{ trip.get('travelers', 1) }} travelers</span>
+                                            <span class="trip-detail">${{ "{:,}".format(trip.get('total_budget', 0)) }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="trip-status">
+                                        <span class="status-badge status-{{ trip.get('status', 'planning') }}">
+                                            {% if trip.get('status') == 'planning' %}
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <polyline points="12,6 12,12 16,14"/>
+                                                </svg>
+                                                Planning
+                                            {% elif trip.get('status') == 'confirmed' %}
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                                </svg>
+                                                Confirmed
+                                            {% else %}
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                                                </svg>
+                                                Completed
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                {% if trip.get('status') == 'planning' %}
+                                <div class="trip-progress">
+                                    <div class="progress-info">
+                                        <span class="progress-label">Planning Progress</span>
+                                        <span class="progress-value">65%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 65%"></div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="trip-actions">
+                                    <a href="{{ url_for('itinerary', trip_id=trip.id) }}" class="trip-action">View Details</a>
+                                    {% if trip.get('status') == 'planning' %}
+                                    <a href="{{ url_for('chat', trip_id=trip.id) }}" class="trip-action">Continue Planning</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                        </div>
+                        <h4 class="empty-title">No trips yet</h4>
+                        <p class="empty-description">Start planning your first adventure with our AI assistant</p>
+                        <a href="{{ url_for('chat') }}" class="btn btn-primary">Plan Your First Trip</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="dashboard-sidebar">
+            <!-- Quick Inspiration -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <h3 class="section-title">Quick Inspiration</h3>
+                    <p class="section-subtitle">Popular destinations to explore</p>
+                </div>
+                <div class="inspiration-list">
+                    <div class="inspiration-card" onclick="window.location.href='{{ url_for('chat') }}'">
+                        <div class="inspiration-gradient inspiration-europe">
+                            <div class="inspiration-content">
+                                <h4 class="inspiration-title">Explore Europe</h4>
+                                <p class="inspiration-description">Historic cities and stunning landscapes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="inspiration-card" onclick="window.location.href='{{ url_for('chat') }}'">
+                        <div class="inspiration-gradient inspiration-asia">
+                            <div class="inspiration-content">
+                                <h4 class="inspiration-title">Asian Adventure</h4>
+                                <p class="inspiration-description">Rich culture and delicious cuisine</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="inspiration-card" onclick="window.location.href='{{ url_for('chat') }}'">
+                        <div class="inspiration-gradient inspiration-tropical">
+                            <div class="inspiration-content">
+                                <h4 class="inspiration-title">Tropical Escape</h4>
+                                <p class="inspiration-description">Beaches, sunshine, and relaxation</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Travel Tips -->
+            <div class="sidebar-section">
+                <div class="section-header">
+                    <h3 class="section-title">Travel Tips</h3>
+                </div>
+                <div class="tips-list">
+                    <div class="tip-item">
+                        <div class="tip-icon tip-icon-blue">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                        </div>
+                        <div class="tip-content">
+                            <h4 class="tip-title">Book in Advance</h4>
+                            <p class="tip-description">Save up to 40% by booking flights 6-8 weeks early</p>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="tip-icon tip-icon-green">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </div>
+                        <div class="tip-content">
+                            <h4 class="tip-title">Travel Insurance</h4>
+                            <p class="tip-description">Protect your trip with comprehensive coverage</p>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="tip-icon tip-icon-yellow">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                        </div>
+                        <div class="tip-content">
+                            <h4 class="tip-title">Local Experiences</h4>
+                            <p class="tip-description">Try authentic local food and cultural activities</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleUserMenu() {
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const userMenu = document.querySelector('.user-menu');
+    const dropdown = document.getElementById('userDropdown');
+    
+    if (!userMenu.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+</script>
+{% endblock %}

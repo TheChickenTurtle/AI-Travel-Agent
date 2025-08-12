@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+
+{% block title %}Itinerary - TravelMind AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/itinerary.css') }}">
+{% endblock %}
+
+{% block body %}
+<!-- Navigation -->
+<nav class="navbar navbar-app">
+    <div class="nav-container">
+        <div class="nav-content">
+            <a href="{{ url_for('dashboard') }}" class="nav-brand">
+                <div class="nav-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+                <span class="nav-brand-text">TravelMind AI</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9,22 9,12 15,12 15,22"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('chat') }}" class="nav-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>Plan Trip</span>
+                </a>
+            </div>
+
+            <div class="nav-user">
+                <div class="user-menu">
+                    <button class="user-button" onclick="toggleUserMenu()">
+                        <div class="user-avatar">
+                            {{ current_user.first_name[0] if current_user.first_name else 'U' }}
+                        </div>
+                        <span class="user-name">{{ current_user.first_name }}</span>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="{{ url_for('profile') }}" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <span>Profile</span>
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16,17 21,12 16,7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span>Sign out</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="itinerary-container">
+    <!-- Header -->
+    <div class="itinerary-header">
+        <div class="header-content">
+            <div class="header-main">
+                <div class="back-button">
+                    <a href="{{ url_for('dashboard') }}" class="btn-back">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"/>
+                            <polyline points="12,19 5,12 12,5"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="header-info">
+                    <div class="title-row">
+                        <h1 class="itinerary-title">{{ itinerary.title }}</h1>
+                        <span class="status-badge status-{{ itinerary.status }}">
+                            {{ itinerary.status.title() }}
+                        </span>
+                    </div>
+                    
+                    <div class="trip-details">
+                        <div class="detail-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            <span>{{ itinerary.destination }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <span>{{ itinerary.start_date }} - {{ itinerary.end_date }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            <span>{{ itinerary.travelers }} travelers</span>
+                        </div>
+                        <div class="detail-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"/>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                            <span>${{ "{:,}".format(itinerary.actual_cost) }} / ${{ "{:,}".format(itinerary.total_budget) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <a href="{{ url_for('chat', trip_id=itinerary.id) }}" class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>Modify with AI</span>
+                </a>
+                <button class="btn btn-secondary" onclick="shareItinerary()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                        <polyline points="16,6 12,2 8,6"/>
+                        <line x1="12" y1="2" x2="12" y2="15"/>
+                    </svg>
+                    <span>Share</span>
+                </button>
+                <button class="btn btn-secondary" onclick="exportItinerary()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7,10 12,15 17,10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Export</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="itinerary-layout">
+        <!-- Day Navigation Sidebar -->
+        <div class="day-sidebar">
+            <div class="sidebar-content">
+                <h3 class="sidebar-title">Trip Days</h3>
+                <div class="days-list">
+                    {% for day in itinerary.days %}
+                    <button class="day-item {% if loop.index0 == 0 %}day-item-active{% endif %}" onclick="selectDay({{ loop.index0 }})">
+                        <div class="day-number">Day {{ loop.index }}</div>
+                        <div class="day-date">{{ day.date }}</div>
+                        <div class="day-summary">
+                            ${{ day.total_cost }} • {{ day.activities|length }} activities
+                        </div>
+                    </button>
+                    {% endfor %}
+                </div>
+                
+                <div class="budget-summary">
+                    <div class="budget-item">
+                        <span class="budget-label">Total Budget</span>
+                        <span class="budget-value">${{ "{:,}".format(itinerary.total_budget) }}</span>
+                    </div>
+                    <div class="budget-item">
+                        <span class="budget-label">Current Cost</span>
+                        <span class="budget-value">${{ "{:,}".format(itinerary.actual_cost) }}</span>
+                    </div>
+                    <div class="budget-bar">
+                        <div class="budget-fill" style="width: {{ (itinerary.actual_cost / itinerary.total_budget * 100)|round }}%"></div>
+                    </div>
+                    <div class="budget-percentage">
+                        {{ (itinerary.actual_cost / itinerary.total_budget * 100)|round }}% of budget used
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="itinerary-main">
+            {% for day in itinerary.days %}
+            <div class="day-content {% if loop.index0 == 0 %}day-content-active{% endif %}" id="day{{ loop.index0 }}">
+                <!-- Day Header -->
+                <div class="day-header">
+                    <div class="day-info">
+                        <h2 class="day-title">Day {{ loop.index }}</h2>
+                        <p class="day-date-full">{{ day.date }}</p>
+                    </div>
+                    
+                    <div class="day-actions">
+                        <div class="day-total">
+                            <div class="total-label">Day Total</div>
+                            <div class="total-value">${{ day.total_cost }}</div>
+                        </div>
+                        
+                        <a href="{{ url_for('chat', trip_id=itinerary.id) }}" class="btn btn-primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"/>
+                                <line x1="5" y1="12" x2="19" y2="12"/>
+                            </svg>
+                            <span>Add Activity</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Activities List -->
+                <div class="activities-list">
+                    {% if day.activities %}
+                        {% for activity in day.activities %}
+                        <div class="activity-card">
+                            <div class="activity-image">
+                                <img src="{{ activity.image_url }}" alt="{{ activity.title }}">
+                            </div>
+                            
+                            <div class="activity-content">
+                                <div class="activity-header">
+                                    <div class="activity-main">
+                                        <div class="activity-title-row">
+                                            <h4 class="activity-title">{{ activity.title }}</h4>
+                                            <span class="activity-category category-{{ activity.category }}">
+                                                {% if activity.category == 'attraction' %}
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                                        <circle cx="12" cy="10" r="3"/>
+                                                    </svg>
+                                                {% elif activity.category == 'restaurant' %}
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+                                                        <path d="M7 2v20"/>
+                                                        <path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
+                                                    </svg>
+                                                {% elif activity.category == 'transport' %}
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18.4 9.6a2 2 0 0 0-1.3-.6H16.5l-.9-1.8A2 2 0 0 0 13.8 6H10.2a2 2 0 0 0-1.8 1.2L7.5 9H6.1a2 2 0 0 0-1.3.6L2.7 11.1C1.9 11.3 1.2 12.1 1.2 13v3c0 .6.4 1 1 1h2"/>
+                                                        <circle cx="7" cy="17" r="2"/>
+                                                        <path d="M9 17h6"/>
+                                                        <circle cx="17" cy="17" r="2"/>
+                                                    </svg>
+                                                {% elif activity.category == 'accommodation' %}
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                                                    </svg>
+                                                {% else %}
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                                                        <circle cx="12" cy="13" r="3"/>
+                                                    </svg>
+                                                {% endif %}
+                                                <span>{{ activity.category.title() }}</span>
+                                            </span>
+                                        </div>
+                                        
+                                        <p class="activity-description">{{ activity.description }}</p>
+                                        
+                                        <div class="activity-details">
+                                            <div class="detail-item">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <polyline points="12,6 12,12 16,14"/>
+                                                </svg>
+                                                <span>{{ activity.time }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                                    <circle cx="12" cy="10" r="3"/>
+                                                </svg>
+                                                <span>{{ activity.location }}</span>
+                                            </div>
+                                            <div class="detail-item">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <line x1="12" y1="1" x2="12" y2="23"/>
+                                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                                </svg>
+                                                <span>${{ activity.cost }}</span>
+                                            </div>
+                                            {% if activity.rating > 0 %}
+                                            <div class="detail-item">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                                                </svg>
+                                                <span>{{ activity.rating }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="activity-actions">
+                                        <button class="action-btn" onclick="editActivity('{{ activity.id }}')">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                            </svg>
+                                        </button>
+                                        <button class="action-btn" onclick="deleteActivity('{{ activity.id }}')">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="3,6 5,6 21,6"/>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                <line x1="10" y1="11" x2="10" y2="17"/>
+                                                <line x1="14" y1="11" x2="14" y2="17"/>
+                                            </svg>
+                                        </button>
+                                        {% if activity.booking_url %}
+                                        <a href="{{ activity.booking_url }}" target="_blank" class="action-btn">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                                <polyline points="15,3 21,3 21,9"/>
+                                                <line x1="10" y1="14" x2="21" y2="3"/>
+                                            </svg>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-day">
+                            <div class="empty-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                </svg>
+                            </div>
+                            <h3 class="empty-title">No activities planned</h3>
+                            <p class="empty-description">Add some activities to get started</p>
+                            <a href="{{ url_for('chat', trip_id=itinerary.id) }}" class="btn btn-primary">Add First Activity</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal" id="shareModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Share Itinerary</h3>
+            <button class="modal-close" onclick="closeShareModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="share-option">
+                <label class="share-label">Share Link</label>
+                <div class="share-input-group">
+                    <input type="text" class="share-input" id="shareLink" readonly value="{{ request.url }}">
+                    <button class="btn btn-primary" onclick="copyShareLink()">Copy</button>
+                </div>
+            </div>
+            
+            <div class="share-buttons">
+                <button class="btn btn-social btn-facebook">Share on Facebook</button>
+                <button class="btn btn-social btn-twitter">Share on Twitter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectDay(dayIndex) {
+    // Hide all day contents
+    const dayContents = document.querySelectorAll('.day-content');
+    dayContents.forEach(content => content.classList.remove('day-content-active'));
+    
+    // Show selected day content
+    document.getElementById(`day${dayIndex}`).classList.add('day-content-active');
+    
+    // Update day navigation
+    const dayItems = document.querySelectorAll('.day-item');
+    dayItems.forEach(item => item.classList.remove('day-item-active'));
+    dayItems[dayIndex].classList.add('day-item-active');
+}
+
+function editActivity(activityId) {
+    // Implement edit functionality
+    console.log('Edit activity:', activityId);
+}
+
+function deleteActivity(activityId) {
+    if (confirm('Are you sure you want to delete this activity?')) {
+        // Implement delete functionality
+        console.log('Delete activity:', activityId);
+    }
+}
+
+function shareItinerary() {
+    document.getElementById('shareModal').classList.add('modal-active');
+}
+
+function closeShareModal() {
+    document.getElementById('shareModal').classList.remove('modal-active');
+}
+
+function copyShareLink() {
+    const shareLink = document.getElementById('shareLink');
+    shareLink.select();
+    document.execCommand('copy');
+    
+    // Show feedback
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = 'Copied!';
+    setTimeout(() => {
+        button.textContent = originalText;
+    }, 2000);
+}
+
+function exportItinerary() {
+    // Implement export functionality
+    console.log('Export itinerary');
+}
+
+function toggleUserMenu() {
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const userMenu = document.querySelector('.user-menu');
+    const dropdown = document.getElementById('userDropdown');
+    
+    if (userMenu && !userMenu.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('shareModal');
+    if (event.target === modal) {
+        closeShareModal();
+    }
+});
+</script>
+{% endblock %}

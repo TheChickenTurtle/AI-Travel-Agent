@@ -1,0 +1,465 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - TravelMind AI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block body %}
+<!-- Navigation -->
+<nav class="navbar navbar-app">
+    <div class="nav-container">
+        <div class="nav-content">
+            <a href="{{ url_for('dashboard') }}" class="nav-brand">
+                <div class="nav-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+                <span class="nav-brand-text">TravelMind AI</span>
+            </a>
+
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9,22 9,12 15,12 15,22"/>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('chat') }}" class="nav-link">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>Plan Trip</span>
+                </a>
+            </div>
+
+            <div class="nav-user">
+                <div class="user-menu">
+                    <button class="user-button" onclick="toggleUserMenu()">
+                        <div class="user-avatar">
+                            {{ current_user.first_name[0] if current_user.first_name else 'U' }}
+                        </div>
+                        <span class="user-name">{{ current_user.first_name }}</span>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="{{ url_for('profile') }}" class="dropdown-item dropdown-item-active">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <span>Profile</span>
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16,17 21,12 16,7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span>Sign out</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="profile-container">
+    <!-- Page Header -->
+    <div class="profile-header">
+        <h1 class="profile-title">Profile Settings</h1>
+        <p class="profile-subtitle">Manage your account and travel preferences</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+        <div class="tab-nav">
+            <button class="tab-button tab-button-active" onclick="switchTab('profile')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Profile</span>
+            </button>
+            <button class="tab-button" onclick="switchTab('preferences')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <span>Travel Preferences</span>
+            </button>
+            <button class="tab-button" onclick="switchTab('privacy')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span>Privacy & Security</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- Profile Tab -->
+        <div class="tab-pane tab-pane-active" id="profileTab">
+            <!-- Profile Header -->
+            <div class="profile-card">
+                <div class="profile-info">
+                    <div class="profile-avatar-section">
+                        <div class="profile-avatar">
+                            {{ current_user.first_name[0] if current_user.first_name else 'U' }}
+                        </div>
+                        <button class="avatar-edit-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                                <circle cx="12" cy="13" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="profile-details">
+                        <h2 class="profile-name">{{ current_user.first_name }} {{ current_user.last_name }}</h2>
+                        <div class="profile-meta">
+                            <div class="meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                    <polyline points="22,6 12,13 2,6"/>
+                                </svg>
+                                <span>{{ current_user.email }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                <span>San Francisco, CA</span>
+                            </div>
+                        </div>
+                        <p class="profile-bio">Travel enthusiast who loves exploring new cultures and trying local cuisines. Always planning the next adventure!</p>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <button class="btn btn-primary" onclick="editProfile()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            <span>Edit</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Travel Stats -->
+            <div class="stats-card">
+                <h3 class="stats-title">Travel Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-icon stat-icon-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                        </div>
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Trips Completed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon stat-icon-green">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/>
+                                <path d="M2 12h20"/>
+                            </svg>
+                        </div>
+                        <div class="stat-value">8</div>
+                        <div class="stat-label">Countries Visited</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon stat-icon-yellow">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"/>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                        </div>
+                        <div class="stat-value">$15,400</div>
+                        <div class="stat-label">Total Spent</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-icon stat-icon-pink">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                        </div>
+                        <div class="stat-value">Japan</div>
+                        <div class="stat-label">Favorite Destination</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preferences Tab -->
+        <div class="tab-pane" id="preferencesTab">
+            <!-- Budget Range -->
+            <div class="preference-section">
+                <h3 class="section-title">Budget Preferences</h3>
+                <div class="preference-grid">
+                    <label class="preference-option">
+                        <input type="radio" name="budget" value="$500-$1000">
+                        <span class="preference-text">$500 - $1,000</span>
+                    </label>
+                    <label class="preference-option preference-option-selected">
+                        <input type="radio" name="budget" value="$1000-$3000" checked>
+                        <span class="preference-text">$1,000 - $3,000</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="radio" name="budget" value="$3000-$5000">
+                        <span class="preference-text">$3,000 - $5,000</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="radio" name="budget" value="$5000+">
+                        <span class="preference-text">$5,000+</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Travel Style -->
+            <div class="preference-section">
+                <h3 class="section-title">Travel Style</h3>
+                <div class="preference-grid preference-grid-5">
+                    <label class="preference-option preference-option-selected">
+                        <input type="checkbox" name="travelStyle" value="Adventure" checked>
+                        <span class="preference-text">🏔️ Adventure</span>
+                    </label>
+                    <label class="preference-option preference-option-selected">
+                        <input type="checkbox" name="travelStyle" value="Culture" checked>
+                        <span class="preference-text">🏛️ Culture</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="travelStyle" value="Relaxation">
+                        <span class="preference-text">🏖️ Relaxation</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="travelStyle" value="Food">
+                        <span class="preference-text">🍜 Food & Dining</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="travelStyle" value="Nature">
+                        <span class="preference-text">🌿 Nature</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="travelStyle" value="Nightlife">
+                        <span class="preference-text">🌃 Nightlife</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="travelStyle" value="Shopping">
+                        <span class="preference-text">🛍️ Shopping</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="travelStyle" value="Photography">
+                        <span class="preference-text">📸 Photography</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Preferred Destinations -->
+            <div class="preference-section">
+                <h3 class="section-title">Preferred Destinations</h3>
+                <div class="preference-grid preference-grid-4">
+                    <label class="preference-option preference-option-selected">
+                        <input type="checkbox" name="destinations" value="Europe" checked>
+                        <span class="preference-text">Europe</span>
+                    </label>
+                    <label class="preference-option preference-option-selected">
+                        <input type="checkbox" name="destinations" value="Asia" checked>
+                        <span class="preference-text">Asia</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="destinations" value="North America">
+                        <span class="preference-text">North America</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="destinations" value="South America">
+                        <span class="preference-text">South America</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="destinations" value="Africa">
+                        <span class="preference-text">Africa</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="destinations" value="Oceania">
+                        <span class="preference-text">Oceania</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="destinations" value="Middle East">
+                        <span class="preference-text">Middle East</span>
+                    </label>
+                    <label class="preference-option">
+                        <input type="checkbox" name="destinations" value="Caribbean">
+                        <span class="preference-text">Caribbean</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="preference-actions">
+                <button class="btn btn-primary" onclick="savePreferences()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20,6 9,17 4,12"/>
+                    </svg>
+                    <span>Save Preferences</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Privacy Tab -->
+        <div class="tab-pane" id="privacyTab">
+            <!-- Change Password -->
+            <div class="privacy-section">
+                <h3 class="section-title">Change Password</h3>
+                <form class="password-form">
+                    <div class="form-group">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" class="form-input" placeholder="Enter current password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <input type="password" class="form-input" placeholder="Enter new password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-input" placeholder="Confirm new password">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                        <span>Update Password</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Account Settings -->
+            <div class="privacy-section">
+                <h3 class="section-title">Account Settings</h3>
+                <div class="settings-list">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4 class="setting-title">Email Notifications</h4>
+                            <p class="setting-description">Receive updates about your trips and recommendations</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4 class="setting-title">Marketing Communications</h4>
+                            <p class="setting-description">Receive travel deals and destination inspiration</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4 class="setting-title">Profile Visibility</h4>
+                            <p class="setting-description">Allow others to find and connect with you</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="privacy-section danger-zone">
+                <h3 class="section-title">Danger Zone</h3>
+                <div class="danger-content">
+                    <div class="danger-info">
+                        <h4 class="danger-title">Delete Account</h4>
+                        <p class="danger-description">Permanently delete your account and all associated data</p>
+                    </div>
+                    <button class="btn btn-danger">Delete Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab(tabName) {
+    // Hide all tab panes
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    tabPanes.forEach(pane => pane.classList.remove('tab-pane-active'));
+    
+    // Show selected tab pane
+    document.getElementById(tabName + 'Tab').classList.add('tab-pane-active');
+    
+    // Update tab buttons
+    const tabButtons = document.querySelectorAll('.tab-button');
+    tabButtons.forEach(button => button.classList.remove('tab-button-active'));
+    event.target.closest('.tab-button').classList.add('tab-button-active');
+}
+
+function editProfile() {
+    // Implement edit profile functionality
+    console.log('Edit profile');
+}
+
+function toggleUserMenu() {
+    const dropdown = document.getElementById('userDropdown');
+    dropdown.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const userMenu = document.querySelector('.user-menu');
+    const dropdown = document.getElementById('userDropdown');
+    
+    if (userMenu && !userMenu.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+// Handle preference option clicks
+document.addEventListener('click', function(event) {
+    const option = event.target.closest('.preference-option');
+    if (option) {
+        const input = option.querySelector('input');
+        if (input.type === 'checkbox') {
+            option.classList.toggle('preference-option-selected', input.checked);
+        } else if (input.type === 'radio') {
+            // Remove selected class from all radio options in the same group
+            const groupName = input.name;
+            const groupOptions = document.querySelectorAll(`input[name="${groupName}"]`);
+            groupOptions.forEach(groupInput => {
+                groupInput.closest('.preference-option').classList.remove('preference-option-selected');
+            });
+            // Add selected class to clicked option
+            option.classList.add('preference-option-selected');
+        }
+    }
+});
+
+// Initialize preferences when preferences tab is shown
+document.addEventListener('DOMContentLoaded', function() {
+    // Store original button text for loading states
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => {
+        btn.setAttribute('data-original-text', btn.innerHTML);
+    });
+});
+</script>
+{% endblock %}
