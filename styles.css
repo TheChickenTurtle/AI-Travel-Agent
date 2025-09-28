@@ -1,0 +1,44 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+#autocomplete-container, #start-autocomplete-container, #end-autocomplete-container {
+    display: flex;
+}
+
+body.light-theme {
+    color-scheme: light;
+    background-color: #ffffff;
+    color: #222222;
+}
+
+body.dark-theme {
+    color-scheme: dark;
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+body.light-theme gmp-place-autocomplete {
+    color-scheme: light;
+    border: 1px solid #9e9e9e;
+    background-color: #ffffff;
+    color: #222222;
+    border-radius: 0.5rem;
+    width: 100%;
+}
+
+body.dark-theme gmp-place-autocomplete {
+    color-scheme: dark;
+    border: 1px solid #5f6368;
+    background-color: #333;
+    color: #ffffff;
+    border-radius: 0.5rem;
+    width: 100%;
+}
