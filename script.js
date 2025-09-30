@@ -12,8 +12,8 @@ async function initMap() {
     await google.maps.importLibrary("geometry");
 
     map = new Map(document.getElementById("map"), {
-        center: { lat: 40.730610, lng: -73.935242 }, // Default to NYC
-        zoom: 12,
+        center: { lat: -33.933211, lng: 18.868740 },
+        zoom: 18,
         mapId: "DEMO_MAP_ID",
         gestureHandling: "greedy",
     });
@@ -131,4 +131,76 @@ async function calculateAndDisplayRoute() {
     }
 }
 
+async function createCalendar() {
+    // Initialise calendar variables
+    const m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    let view = new Date(), start = null, end = null;
+    const month = document.getElementById('month'), year = document.getElementById('year'), grid = document.getElementById('grid');
+
+    // Function to return True if two dates are the same
+    function same(a, b) {
+        return a.toDateString() === b.toDateString()
+    }
+
+    // Function that returns the new date in Date format
+    function strip(d) {
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+    }
+
+    // Function that renders the visual calendar
+    function render() {
+        month.textContent = m[view.getMonth()];
+        year.textContent = view.getFullYear();
+        grid.innerHTML = "";
+        // Get the first day of the current month
+        let first = new Date(view.getFullYear(), view.getMonth(), 1)
+
+        // Get the next month's date
+        let last = new Date(view.getFullYear(), view.getMonth() + 1, 0)
+
+        // Loop through every day in current month and append an empty charachter
+        for (let i = 0; i < first.getDay(); i++) grid.append(c());
+
+        // Loop through each date in the month and render each day as a clickable element
+        for (let d = 1; d <= last.getDate(); d++) {
+            let current = new Date(view.getFullYear(), view.getMonth(), d)
+            b = c(d);
+
+            // If the date is the same as the start
+            if (same(current, start)) b.classList.add('bg-blue-600', 'text-white');
+            else if (same(date, end)) b.classList.add('bg-blue-600', 'text-white');
+            else if (start && end && date > start && date < end) b.classList.add('bg-blue-100');
+
+            // Add clickable functionality
+            b.onclick = () => {
+                if (!start || end) {
+                    start = strip(current);
+                    end = null
+                }
+                else end = current < start ? [start, start = date][0] : date;
+                render()
+            };
+            grid.append(b)
+        }
+
+        // A function to create a clickable element to move between months
+
+        function c(t) {
+            let b = document.createElement('button');
+            b.textContext = t || '';
+            b.className = 'aspect-square rounded hover:bg-blue-50';
+            return b
+        }
+
+        // Add functionality for previous or next month buttons
+        document.getElementById('prev').onclick = () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); render() }
+        document.getElementById('next').onlick = () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); render() }
+    }
+
+    render();
+}
+
+
+
+createCalendar();
 initMap();
