@@ -113,11 +113,11 @@ async function calculateAndDisplayRoute() {
             };
 
             // Display route info
-            const distance = (route.distanceMeters / 1609.34).toFixed(1); // miles
+            const distance = (route.distanceMeters / 1000).toFixed(1)
             const durationSeconds = parseInt(route.duration.slice(0, -1));
             const hours = Math.floor(durationSeconds / 3600);
             const minutes = Math.round((durationSeconds % 3600) / 60);
-            document.getElementById('route-summary').textContent = `Distance: ${distance} mi, Duration: ${hours}h ${minutes}m`;
+            document.getElementById('route-summary').textContent = `Distance: ${distance} km, Duration: ${hours}h ${minutes}m`;
             routeInfoDiv.style.display = 'block';
 
         } else {
@@ -193,8 +193,10 @@ async function createCalendar() {
         }
 
         // Add functionality for previous or next month buttons
-        document.getElementById('prev').onclick = () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); render() }
-        document.getElementById('next').onlick = () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); render() }
+        document.getElementById('prev').onclick = () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); 
+            render() }
+        document.getElementById('next').onclick = () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); 
+            render() }
     }
 
     render();
