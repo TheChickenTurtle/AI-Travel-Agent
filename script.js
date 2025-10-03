@@ -139,6 +139,7 @@ async function createCalendar() {
 
     // Function to return True if two dates are the same
     function same(a, b) {
+        if (!a || !b) return false;
         return a.toDateString() === b.toDateString()
     }
 
@@ -168,8 +169,8 @@ async function createCalendar() {
 
             // If the date is the same as the start
             if (same(current, start)) b.classList.add('bg-blue-600', 'text-white');
-            else if (same(date, end)) b.classList.add('bg-blue-600', 'text-white');
-            else if (start && end && date > start && date < end) b.classList.add('bg-blue-100');
+            else if (same(current, end)) b.classList.add('bg-blue-600', 'text-white');
+            else if (start && end && current > start && current < end) b.classList.add('bg-blue-100');
 
             // Add clickable functionality
             b.onclick = () => {
@@ -177,11 +178,12 @@ async function createCalendar() {
                     start = strip(current);
                     end = null
                 }
-                else end = current < start ? [start, start = date][0] : date;
+                else end = current < start ? [start, start = current][0] : current;
                 render()
             };
             grid.append(b)
         }
+    }
 
         // A function to create a clickable element to move between months
 
@@ -193,14 +195,16 @@ async function createCalendar() {
         }
 
         // Add functionality for previous or next month buttons
-        document.getElementById('prev').onclick = () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); 
-            render() }
-        document.getElementById('next').onclick = () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); 
-            render() }
-    }
-
+        document.getElementById('prev').addEventListener('click', () => { 
+            view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+            render(); 
+        });
+        document.getElementById('next').addEventListener('click', () => { 
+            view = new Date(view.getFullYear(), view.getMonth() + 1, 1); 
+            render(); 
+        });
     render();
-}
+    }
 
 
 
