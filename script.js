@@ -184,7 +184,6 @@ async function createCalendar() {
             grid.append(b)
         }
     }
-
         // A function to create a clickable element to move between months
 
         function c(t) {
@@ -207,6 +206,6 @@ async function createCalendar() {
     }
 
 
-
+    //Fake comment
 createCalendar();
 initMap();
